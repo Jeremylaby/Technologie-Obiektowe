@@ -65,30 +65,51 @@ public class Course {
     }
 
     public boolean enrollStudent(final Student student) {
-        String enrollStudentSql = "";
+        String enrollStudentSql = "INSERT INTO student_course (student_id, course_id) VALUES(?,?)";
         Object[] args = {
-
+                student.id(),
+                this.id
         };
+        try {
+            QueryExecutor.createAndObtainId(enrollStudentSql,args);
+            isStudentsListDownloaded=false;
+            return true;
 
-        //TODO
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
 
-        return false;
     }
 
     public List<Student> studentList() {
-        String findStudentListSql = "";
-        Object[] args = {
-
-        };
+        String findStudentListSql = "SELECT * FROM student JOIN student_course ON student.id = student_course.student_id WHERE student_course.course_id = ?";
+        Object[] args = {id};
 
         List<Student> resultList = new LinkedList<>();
-        // TODO
 
+        try{
+            ResultSet rs = QueryExecutor.read(findStudentListSql, args);
+            while(rs.next()){
+                resultList.add(new Student(
+                        rs.getInt("id"),
+                        rs.getString("first_name"),
+                        rs.getString("last_name"),
+                        rs.getInt("index_number")
+                ));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return resultList;
     }
 
     public List<Student> cachedStudentsList() {
         //TOTO implement
+        if(!isStudentsListDownloaded){
+            isStudentsListDownloaded = true;
+            enrolledStudents = studentList();
+        }
         return enrolledStudents;
     }
 
