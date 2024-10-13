@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="RxTests" tests="1" skipped="0" failures="0" errors="0" timestamp="2024-10-13T20:20:53" hostname="DESKTOP-V7CTTMP" time="0.089">
+  <properties/>
+  <testcase name="displaySortedMoviesTitles()" classname="RxTests" time="0.089"/>
+  <system-out><![CDATA[MOVIE LOADED: index=1, title=ACADEMY DINOSAUR, description=A Epic Drama of a Feminist And a Mad Scientist who must Battle a Teacher in The Canadian Rockies, releaseYear=2006, length=86, rating=PG
+MOVIE LOADED: index=2, title=ACE GOLDFINGER, description=A Astounding Epistle of a Database Administrator And a Explorer who must Find a Car in Ancient China, releaseYear=2006, length=48, rating=G
+MOVIE LOADED: index=3, title=ADAPTATION HOLES, description=A Astounding Reflection of a Lumberjack And a Car who must Sink a Lumberjack in A Baloon Factory, releaseYear=2006, length=50, rating=NC-17
+MOVIE LOADED: index=4, title=AFFAIR PREJUDICE, description=A Fanciful Documentary of a Frisbee And a Lumberjack who must Chase a Monkey in A Shark Tank, releaseYear=2006, length=117, rating=G
+MOVIE LOADED: index=5, title=AFRICAN EGG, description=A Fast-Paced Documentary of a Pastry Chef And a Dentist who must Pursue a Forensic Psychologist in The Gulf of Mexico, releaseYear=2006, length=130, rating=G
+MOVIE LOADED: index=6, title=AGENT TRUMAN, description=A Intrepid Panorama of a Robot And a Boy who must Escape a Sumo Wrestler in Ancient China, releaseYear=2006, length=169, rating=PG
+MOVIE LOADED: index=7, title=AIRPLANE SIERRA, description=A Touching Saga of a Hunter And a Butler who must Discover a Butler in A Jet Boat, releaseYear=2006, length=62, rating=PG-13
+MOVIE LOADED: index=8, title=AIRPORT POLLOCK, description=A Epic Tale of a Moose And a Girl who must Confront a Monkey in Ancient India, releaseYear=2006, length=54, rating=R
+MOVIE LOADED: index=9, title=ALABAMA DEVIL, description=A Thoughtful Panorama of a Database Administrator And a Mad Scientist who must Outgun a Mad Scientist in A Jet Boat, releaseYear=2006, length=114, rating=PG-13
+MOVIE LOADED: index=10, title=ALADDIN CALENDAR, description=A Action-Packed Tale of a Man And a Lumberjack who must Reach a Feminist in Ancient China, releaseYear=2006, length=63, rating=NC-17
+?[0;34mACADEMY DINOSAUR?[0m
+?[0;34mACE GOLDFINGER?[0m
+?[0;34mADAPTATION HOLES?[0m
+?[0;34mAFFAIR PREJUDICE?[0m
+?[0;34mAFRICAN EGG?[0m
+?[0;34mAGENT TRUMAN?[0m
+?[0;34mAIRPLANE SIERRA?[0m
+?[0;34mAIRPORT POLLOCK?[0m
+?[0;34mALABAMA DEVIL?[0m
+?[0;34mALADDIN CALENDAR?[0m
+?[0;32mFinished?[0m
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
