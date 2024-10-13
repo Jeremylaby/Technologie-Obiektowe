@@ -18,8 +18,10 @@ public class RxTests {
      */
     @Test
     public void loadMoviesAsList() throws FileNotFoundException {
-        Observable.just("Hello RX")
-                .subscribe(System.out::println);
+
+        MovieReader movieReader = new MovieReader();
+        movieReader.getMoviesFromList(MOVIES1_DB)
+                .subscribe(movie -> print(movie, Color.BLUE));
     }
 
     /**
@@ -27,7 +29,9 @@ public class RxTests {
      */
     @Test
     public void loadMoviesAsStream() {
-
+        MovieReader movieReader = new MovieReader();
+        movieReader.getMoviesAsStream(MOVIES1_DB)
+                .subscribe(movie -> print(movie, Color.BLUE));
     }
 
     /**
@@ -35,6 +39,9 @@ public class RxTests {
      */
     @Test
     public void loadMoviesAsStreamAndHandleError() {
+        MovieReader movieReader = new MovieReader();
+        movieReader.getMoviesAsStream("<:").
+                subscribe(movie -> print(movie, Color.BLUE), error -> print("Error",Color.RED));
 
     }
 
@@ -43,6 +50,13 @@ public class RxTests {
      */
     @Test
     public void loadMoviesAsStreamAndFinishWithMessage() {
+        MovieReader movieReader = new MovieReader();
+        movieReader.getMoviesAsStream(MOVIES1_DB)
+                .take(10)
+                .subscribe(movie -> print(movie, Color.BLUE),
+                        error -> print("Error",Color.RED),
+                        () -> print("Finished",Color.GREEN));
+
 
     }
 
@@ -51,7 +65,12 @@ public class RxTests {
      */
     @Test
     public void displayLongMovies() {
-
+        MovieReader movieReader = new MovieReader();
+        movieReader.getMoviesAsStream(MOVIES1_DB)
+                .filter(movie -> movie.getLength()>150)
+                .subscribe(movie -> print(movie, Color.BLUE),
+                        error -> print("Error",Color.RED),
+                        () -> print("Finished",Color.GREEN));
     }
 
     /**
@@ -59,7 +78,16 @@ public class RxTests {
      */
     @Test
     public void displaySortedMoviesTitles() {
-
+        MovieReader movieReader = new MovieReader();
+        movieReader.getMoviesAsStream(MOVIES1_DB)
+                .map(Movie::getTitle)
+                .take(10)
+                .sorted()
+                .subscribe(movie -> print(movie, Color.BLUE),
+                        error -> print("Error",Color.RED),
+                        () -> print("Finished",Color.GREEN));
+        //Sorted zbiera wszystkie filmy i je sortuje
+        //kolejność take i sorted ma znaczenie
     }
 
     /**
