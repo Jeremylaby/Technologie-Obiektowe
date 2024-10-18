@@ -1,8 +1,13 @@
+import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.observables.ConnectableObservable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import org.junit.jupiter.api.Test;
 import util.Color;
 
 import java.io.FileNotFoundException;
+import java.util.concurrent.TimeUnit;
 
 import static util.ColorUtil.print;
 import static util.ColorUtil.printThread;
@@ -95,7 +100,13 @@ public class RxTests {
      */
     @Test
     public void displayActorsForMovies() {
-
+        MovieReader movieReader = new MovieReader();
+        movieReader.getMoviesAsStream(MOVIES1_DB)
+                .filter(movie -> movie.getLength()>150)
+                .flatMap(movie -> Observable.fromIterable(movieReader.readActors(movie)))
+                .distinct()
+                .sorted()
+                .subscribe(movie -> print(movie, Color.BLUE));
     }
 
     /**
@@ -103,6 +114,13 @@ public class RxTests {
      */
     @Test
     public void loadMoviesFromManySources() {
+        MovieReader movieReader = new MovieReader();
+        Observable<Movie> movies1 = movieReader.getMoviesAsStream(MOVIES1_DB)
+                .doOnNext(movie -> print(movie, Color.RED));
+        Observable<Movie> movies2 = movieReader.getMoviesAsStream(MOVIES2_DB)
+                .doOnNext(movie -> print(movie, Color.GREEN));
+        Observable.merge(movies1, movies2)
+                .subscribe(movie -> print(movie,Color.BLUE));
 
     }
 
@@ -110,15 +128,30 @@ public class RxTests {
      * Example 9: Playing with threads (subscribeOn).
      */
     @Test
-    public void loadMoviesInBackground() {
-
+    public void loadMoviesInBackground() throws InterruptedException {
+        MovieReader movieReader = new MovieReader();
+        movieReader.getMoviesAsStream(MOVIES1_DB)
+                .subscribeOn(Schedulers.newThread())
+                .subscribe(movie -> printThread(movie,Color.BLUE));
+        printThread("Po wszystkim", Color.MAGENTA);
+        Thread.sleep(10000);
     }
 
     /**
      * Example 10: Playing with threads (observeOn).
      */
     @Test
-    public void switchThreadsDuringMoviesProcessing() {
+    public void switchThreadsDuringMoviesProcessing() throws InterruptedException {
+        MovieReader movieReader = new MovieReader();
+        movieReader.getMoviesAsStream(MOVIES1_DB)
+                .map(Movie::getIndex)
+                .subscribeOn(Schedulers.newThread())
+                .doOnNext(movie -> printThread(movie,Color.RED))
+                .observeOn(Schedulers.newThread())
+                .doOnNext(movie -> printThread(movie,Color.GREEN))
+                .blockingSubscribe(movie -> printThread(movie,Color.BLUE));
+
+
 
     }
 
@@ -128,13 +161,25 @@ public class RxTests {
     @Test
     public void loadMoviesFromManySourcesParallel() {
         // Static merge solution
-
+        MovieReader movieReader = new MovieReader();
+//        Observable<Movie> movies1 = movieReader.getMoviesAsStream(MOVIES1_DB)
+//                .doOnNext(movie -> print(movie, Color.RED))
+//                .subscribeOn(Schedulers.newThread());
+//        Observable<Movie> movies2 = movieReader.getMoviesAsStream(MOVIES2_DB)
+//                .doOnNext(movie -> print(movie, Color.GREEN))
+//                .subscribeOn(Schedulers.newThread());
+//        Observable.merge(movies1, movies2)
+//                .blockingSubscribe(movie -> print(movie,Color.BLUE));
 
 
         // FlatMap solution:
-        final MovieDescriptor movie1Descriptor = new MovieDescriptor(MOVIES1_DB, Color.GREEN);
-        final MovieDescriptor movie2Descriptor = new MovieDescriptor(MOVIES2_DB, Color.BLUE);
-
+        final MovieDescriptor movie1Descriptor = new MovieDescriptor(MOVIES1_DB, Color.RED);
+        final MovieDescriptor movie2Descriptor = new MovieDescriptor(MOVIES2_DB, Color.GREEN);
+        Observable.just(movie1Descriptor, movie2Descriptor)
+                .flatMap(movieDescriptor -> movieReader.getMoviesAsStream(movieDescriptor.getMovieDbFilename()))
+                .doOnNext(movie -> print(movie,movie1Descriptor.getDebugColor()))
+                .subscribeOn(Schedulers.newThread())
+                .blockingSubscribe(movie -> print(movie,Color.BLUE));
     }
 
     /**
@@ -142,7 +187,13 @@ public class RxTests {
      */
     @Test
     public void loadMoviesWithDelay() {
-
+        MovieReader movieReader = new MovieReader();
+        Observable<Movie> movies1 = movieReader.getMoviesAsStream(MOVIES1_DB)
+                .take(10)
+                .subscribeOn(Schedulers.newThread());
+        Observable<Long> interval = Observable.interval(1, TimeUnit.SECONDS);
+        Observable.zip(movies1,interval, (movie,tick)->movie)
+                .blockingSubscribe(movie -> print(movie,Color.BLUE));
     }
 
     /**
@@ -150,7 +201,15 @@ public class RxTests {
      */
     @Test
     public void trackMoviesLoadingWithBackpressure() {
-
+        MovieReader movieReader = new MovieReader();
+        movieReader.getMoviesAsStream(MOVIES1_DB)
+                .doOnNext(movie -> print(movie,Color.RED))
+                .doOnNext(movie -> Thread.sleep(10))
+                .subscribeOn(Schedulers.newThread())
+                .toFlowable(BackpressureStrategy.LATEST)
+                .observeOn(Schedulers.io(),true,1)
+                .doOnNext(this::displayProgress)
+                .blockingSubscribe();
     }
 
     /**
@@ -158,7 +217,20 @@ public class RxTests {
      */
     @Test
     public void oneMovieStreamManyDifferentSubscribers() {
+        MovieReader movieReader = new MovieReader();
+        //cold observable
+        Observable<Movie> movies1 = movieReader.getMoviesAsStream(MOVIES1_DB);
 
+        //hot observable
+
+        ConnectableObservable<Movie> hotObservable = movies1.publish();
+        hotObservable
+                .take(30)
+                .subscribe(movie -> print(movie,Color.RED));
+        hotObservable
+                .filter(movie -> movie.getRating().equals("R"))
+                .subscribe(movie -> print(movie,Color.BLUE));
+        hotObservable.connect();
     }
 
     /**
