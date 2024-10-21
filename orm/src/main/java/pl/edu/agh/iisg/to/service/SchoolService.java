@@ -4,12 +4,12 @@ import pl.edu.agh.iisg.to.dao.CourseDao;
 import pl.edu.agh.iisg.to.dao.GradeDao;
 import pl.edu.agh.iisg.to.dao.StudentDao;
 import pl.edu.agh.iisg.to.model.Course;
+import pl.edu.agh.iisg.to.model.Grade;
 import pl.edu.agh.iisg.to.model.Student;
 import pl.edu.agh.iisg.to.session.TransactionService;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class SchoolService {
 
@@ -41,17 +41,52 @@ public class SchoolService {
     }
 
     public boolean removeStudent(int indexNumber) {
-        // TODO - implement
-        return false;
+        return transactionService.doAsTransaction(() -> {
+            Optional<Student> studentOptional = studentDao.findByIndexNumber(indexNumber);
+            if(studentOptional.isEmpty())return false;
+//            for(Course course : studentOptional.get().courseSet()) {
+//                for( Grade grade : studentOptional.get().gradeSet()) {
+//                    if(course.gradeSet().contains(grade)) {
+//                        course.gradeSet().remove(grade);
+//                    }
+//                }
+//            }
+            for(Course course : studentOptional.get().courseSet()) {
+                course.studentSet().remove(studentOptional.get());
+            }
+            for (Grade grade : studentOptional.get().gradeSet()) {
+                gradeDao.remove(grade);
+            }
+            studentOptional.get().courseSet().clear();
+            studentOptional.get().gradeSet().clear();
+            studentDao.remove(studentOptional.get());
+            return true;
+        }).orElse(false);
     }
 
     public boolean gradeStudent(final Student student, final Course course, final float gradeValue) {
-        // TODO - implement
-        return false;
+        return transactionService.doAsTransaction(() -> {
+            Grade grade = new Grade(student, course, gradeValue);
+            Optional<Grade> savedGrade = gradeDao.save(grade);
+            if(savedGrade.isEmpty())return false;
+            student.gradeSet().add(grade);
+            course.gradeSet().add(grade);
+
+            return true;
+        }).orElse(false);
     }
 
     public Map<String, List<Float>> getStudentGrades(String courseName) {
-        // TODO - implement
-        return Collections.emptyMap();
+        Optional<Course>  courseOptional = courseDao.findByName(courseName);
+        if(courseOptional.isEmpty())return Collections.emptyMap();
+        Course course = courseOptional.get();
+        Map<String, List<Float>> studentGrades = new HashMap<>();
+        for(Student student : course.studentSet()) {
+            List<Float> grades = course.gradeSet().stream()
+                    .filter(grade -> grade.student().equals(student)).map(Grade::grade).sorted().toList();
+            studentGrades.put(student.firstName() +" "+ student.lastName(), grades);
+        }
+
+        return studentGrades;
     }
 }
