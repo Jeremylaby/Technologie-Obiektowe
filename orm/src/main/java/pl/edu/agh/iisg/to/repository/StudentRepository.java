@@ -37,6 +37,9 @@ public class StudentRepository implements Repository<Student> {
     public List<Student> findAll() {
         return studentDao.findAll();
     }
+    public Optional<Student> findByIndexNumber(int indexNumber) {
+        return studentDao.findByIndexNumber(indexNumber);
+    }
 
     @Override
     public void remove(Student student) {

@@ -16,17 +16,13 @@ public class SchoolService {
 
     private final TransactionService transactionService;
 
-    private final StudentDao studentDao;
-
-    private final CourseDao courseDao;
 
     private final GradeDao gradeDao;
     private final StudentRepository studentRepository;
 
-    public SchoolService(TransactionService transactionService, StudentDao studentDao, CourseDao courseDao, GradeDao gradeDao, StudentRepository studentRepository) {
+    public SchoolService(TransactionService transactionService, GradeDao gradeDao, StudentRepository studentRepository) {
         this.transactionService = transactionService;
-        this.studentDao = studentDao;
-        this.courseDao = courseDao;
+
         this.gradeDao = gradeDao;
         this.studentRepository=studentRepository;
 
@@ -46,15 +42,8 @@ public class SchoolService {
 
     public boolean removeStudent(int indexNumber) {
         return transactionService.doAsTransaction(() -> {
-            Optional<Student> studentOptional = studentDao.findByIndexNumber(indexNumber);
+            Optional<Student> studentOptional = studentRepository.findByIndexNumber(indexNumber);
             if(studentOptional.isEmpty())return false;
-//            for(Course course : studentOptional.get().courseSet()) {
-//                for( Grade grade : studentOptional.get().gradeSet()) {
-//                    if(course.gradeSet().contains(grade)) {
-//                        course.gradeSet().remove(grade);
-//                    }
-//                }
-//            }
             studentRepository.remove(studentOptional.get());
             return true;
         }).orElse(false);
@@ -73,13 +62,14 @@ public class SchoolService {
     }
 
     public Map<String, List<Float>> getStudentGrades(String courseName) {
-        Optional<Course>  courseOptional = courseDao.findByName(courseName);
-        if(courseOptional.isEmpty())return Collections.emptyMap();
-        Course course = courseOptional.get();
+        List<Student> students = studentRepository.findAllByCourseName(courseName);
+        if (students.isEmpty()) {
+            return Collections.emptyMap();
+        }
         Map<String, List<Float>> studentGrades = new HashMap<>();
-        for(Student student : course.studentSet()) {
-            List<Float> grades = course.gradeSet().stream()
-                    .filter(grade -> grade.student().equals(student)).map(Grade::grade).sorted().toList();
+        for (Student student : students) {
+            List<Float> grades = student.gradeSet().stream()
+                    .filter(grade -> grade.student().equals(student)&&grade.course().name().equals(courseName)).map(Grade::grade).sorted().toList();
             studentGrades.put(student.firstName() +" "+ student.lastName(), grades);
         }
 
