@@ -231,6 +231,9 @@ public class RxTests {
                 .filter(movie -> movie.getRating().equals("R"))
                 .subscribe(movie -> print(movie,Color.BLUE));
         hotObservable.connect();
+        hotObservable
+                .take(10)
+                .subscribe(movie -> print(movie,Color.GREEN));
     }
 
     /**
@@ -238,7 +241,11 @@ public class RxTests {
      */
     @Test
     public void cacheMoviesInfo() {
-
+        MovieReader movieReader = new MovieReader();
+        Observable<Movie> movies1 = movieReader.getMoviesAsStream(MOVIES1_DB).cache();
+        movies1.subscribe(movie -> print(movie,Color.RED));
+        Long moviesCount = movies1.count().blockingGet();
+        System.out.println(moviesCount);
     }
 
     private void displayProgress(Movie movie) throws InterruptedException {
