@@ -6,6 +6,7 @@ import pl.edu.agh.iisg.to.dao.StudentDao;
 import pl.edu.agh.iisg.to.model.Course;
 import pl.edu.agh.iisg.to.model.Grade;
 import pl.edu.agh.iisg.to.model.Student;
+import pl.edu.agh.iisg.to.repository.StudentRepository;
 import pl.edu.agh.iisg.to.session.TransactionService;
 
 import java.util.*;
@@ -20,12 +21,15 @@ public class SchoolService {
     private final CourseDao courseDao;
 
     private final GradeDao gradeDao;
+    private final StudentRepository studentRepository;
 
-    public SchoolService(TransactionService transactionService, StudentDao studentDao, CourseDao courseDao, GradeDao gradeDao) {
+    public SchoolService(TransactionService transactionService, StudentDao studentDao, CourseDao courseDao, GradeDao gradeDao, StudentRepository studentRepository) {
         this.transactionService = transactionService;
         this.studentDao = studentDao;
         this.courseDao = courseDao;
         this.gradeDao = gradeDao;
+        this.studentRepository=studentRepository;
+
     }
 
     public boolean enrollStudent(final Course course, final Student student) {
@@ -51,15 +55,7 @@ public class SchoolService {
 //                    }
 //                }
 //            }
-            for(Course course : studentOptional.get().courseSet()) {
-                course.studentSet().remove(studentOptional.get());
-            }
-            for (Grade grade : studentOptional.get().gradeSet()) {
-                gradeDao.remove(grade);
-            }
-            studentOptional.get().courseSet().clear();
-            studentOptional.get().gradeSet().clear();
-            studentDao.remove(studentOptional.get());
+            studentRepository.remove(studentOptional.get());
             return true;
         }).orElse(false);
     }

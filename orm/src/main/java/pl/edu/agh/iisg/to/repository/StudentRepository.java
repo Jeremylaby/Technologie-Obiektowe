@@ -1,18 +1,26 @@
 package pl.edu.agh.iisg.to.repository;
 
+import pl.edu.agh.iisg.to.dao.CourseDao;
+import pl.edu.agh.iisg.to.dao.GradeDao;
 import pl.edu.agh.iisg.to.dao.StudentDao;
 import pl.edu.agh.iisg.to.model.Course;
 import pl.edu.agh.iisg.to.model.Grade;
 import pl.edu.agh.iisg.to.model.Student;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 public class StudentRepository implements Repository<Student> {
-    private StudentDao studentDao;
+    private final StudentDao studentDao;
+    private final GradeDao gradeDao;
+    private final CourseDao courseDao;
 
-    public StudentRepository(StudentDao studentDao) {
+
+    public StudentRepository(StudentDao studentDao, GradeDao gradeDao, CourseDao courseDao) {
         this.studentDao = studentDao;
+        this.gradeDao = gradeDao;
+        this.courseDao = courseDao;
     }
 
     @Override
@@ -32,26 +40,20 @@ public class StudentRepository implements Repository<Student> {
 
     @Override
     public void remove(Student student) {
-        transactionService.doAsTransaction(() -> {
-            Optional<Student> studentOptional = studentDao.findByIndexNumber(indexNumber);
-            if(studentOptional.isEmpty())return false;
-//            for(Course course : studentOptional.get().courseSet()) {
-//                for( Grade grade : studentOptional.get().gradeSet()) {
-//                    if(course.gradeSet().contains(grade)) {
-//                        course.gradeSet().remove(grade);
-//                    }
-//                }
-//            }
-            for(Course course : studentOptional.get().courseSet()) {
-                course.studentSet().remove(studentOptional.get());
+            for(Course course : student.courseSet()) {
+                course.studentSet().remove(student);
             }
-            for (Grade grade : studentOptional.get().gradeSet()) {
+            for (Grade grade : student.gradeSet()) {
                 gradeDao.remove(grade);
             }
-            studentOptional.get().courseSet().clear();
-            studentOptional.get().gradeSet().clear();
-            studentDao.remove(studentOptional.get());
-            return true;
-        })
+            student.courseSet().clear();
+            student.gradeSet().clear();
+            studentDao.remove(student);
+    }
+    public List<Student> findAllByCourseName(String courseName) {
+        Optional<Course>  courseOptional = courseDao.findByName(courseName);
+        if(courseOptional.isEmpty())return Collections.emptyList();
+        Course course = courseOptional.get();
+        return course.studentSet().stream().toList();
     }
 }
