@@ -1,6 +1,7 @@
 package app;
 
 import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import model.Photo;
 import util.PhotoDownloader;
 import util.PhotoProcessor;
@@ -8,6 +9,7 @@ import util.PhotoSerializer;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,7 +36,7 @@ public class PhotoCrawler {
     public void downloadPhotoExamples() {
         try {
             Observable<Photo> downloadedExamples = photoDownloader.getPhotoExamples();
-            downloadedExamples
+            downloadedExamples.compose(this::processPhotosAdvanced)
                     .subscribe(photoSerializer::savePhoto);
 
         } catch (IOException e) {
@@ -42,23 +44,52 @@ public class PhotoCrawler {
         }
     }
 
-    public void downloadPhotosForQuery(String query) throws IOException {
-        photoDownloader.searchForPhotos(query)
-                .take(10)
-                .subscribe(photoSerializer::savePhoto,
-                        error-> log.log(Level.SEVERE, "Downloading photo error", error),
-                        ()->log.log(Level.SEVERE, "Downloading photo completed"));
+    public void downloadPhotosForQuery(String query) {
+        try {
+            photoDownloader.searchForPhotos(query)
+                    .compose(this::processPhotosAdvanced)
+                    .take(20)
+                    .blockingSubscribe(photoSerializer::savePhoto,
+                            error -> log.log(Level.SEVERE, "Downloading photo error", error),
+                            () -> log.log(Level.SEVERE, "Downloading photo completed"));
+        } catch (IOException e) {
+            log.log(Level.SEVERE, "Downloading photo examples error", e);
+        }
     }
 
     public void downloadPhotosForMultipleQueries(List<String> queries) {
         try {
             photoDownloader.searchForPhotos(queries)
-                    .take(10)
+                    .compose(this::processPhotosAdvanced)
+                    .take(50)
                     .blockingSubscribe(photoSerializer::savePhoto,
-                    error-> log.log(Level.SEVERE, "Downloading photo error", error),
-                    ()->log.log(Level.SEVERE, "Downloading photo completed"));
+                            error -> log.log(Level.SEVERE, "Downloading photo error", error),
+                            () -> log.log(Level.SEVERE, "Downloading photo completed"));
+
         } catch (IOException e) {
             log.log(Level.SEVERE, "Downloading photo examples error", e);
+
         }
+    }
+
+    public Observable<Photo> processPhotos(Observable<Photo> photos) {
+        return photos.filter(photoProcessor::isPhotoValid).map(photoProcessor::convertToMiniature);
+    }
+
+    public Observable<Photo> processPhotosAdvanced(Observable<Photo> photos) {
+        return photos
+                .filter(photoProcessor::isPhotoValid)
+                .groupBy(photoProcessor::isPhotoMedium).flatMap(groupedObservable -> {
+                    if (Boolean.TRUE.equals(groupedObservable.getKey())) {
+                        return groupedObservable
+                                .buffer(5, TimeUnit.SECONDS)
+                                .doOnNext(group->log.log(Level.SEVERE, "Nowy buffor"))
+                                .flatMap(Observable::fromIterable);
+                    } else {
+                        return groupedObservable
+                                .observeOn(Schedulers.computation())
+                                .map(photoProcessor::convertToMiniature);
+                    }
+                });
     }
 }

@@ -8,16 +8,16 @@ public class CrawlerApp {
 
     public static final String SCRAPER_API_KEY = "f8a8a55046f67fa801bf22889838c40c";
 
-    private static final List<String> TOPICS = List.of("Dark Souls 3", "Elden Ring", "Slay the spire", "Gym");
+    private static final List<String> TOPICS = List.of("Gym","Bike","Dark Souls 3",  "Slay the spire");
 
 
     public static void main(String[] args) throws IOException {
         PhotoCrawler photoCrawler = new PhotoCrawler();
         photoCrawler.resetLibrary();
-//        photoCrawler.downloadPhotoExamples();
+////        photoCrawler.downloadPhotoExamples();
 //        photoCrawler.downloadPhotosForQuery(TOPICS.get(0));
-//        photoCrawler.downloadPhotosForMultipleQueries(TOPICS);
-//        System.out.println("Hej");
-//        photoCrawler.downloadPhotosForMultipleQueries(TOPICS);
+        photoCrawler.downloadPhotosForMultipleQueries(TOPICS);
+
+
     }
 }

@@ -10,6 +10,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.BitSet;
 import java.util.logging.Logger;
 
 public class PhotoProcessor {
@@ -19,6 +20,8 @@ public class PhotoProcessor {
     public Boolean isPhotoValid(Photo photo) {
         return PhotoSize.resolve(photo) != PhotoSize.SMALL;
     }
+    public Boolean isPhotoMedium(Photo photo) {return PhotoSize.resolve(photo) == PhotoSize.MEDIUM;}
+    public Boolean isPhotoLarge(Photo photo) {return PhotoSize.resolve(photo) == PhotoSize.LARGE;}
 
     public Photo convertToMiniature(Photo photo) throws IOException {
         log.info("...Converting photo... : " + photo.getPhotoData().length);
