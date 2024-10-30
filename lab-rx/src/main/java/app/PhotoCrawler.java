@@ -51,6 +51,14 @@ public class PhotoCrawler {
     }
 
     public void downloadPhotosForMultipleQueries(List<String> queries) {
-        // TODO Implement me :(
+        try {
+            photoDownloader.searchForPhotos(queries)
+                    .take(10)
+                    .blockingSubscribe(photoSerializer::savePhoto,
+                    error-> log.log(Level.SEVERE, "Downloading photo error", error),
+                    ()->log.log(Level.SEVERE, "Downloading photo completed"));
+        } catch (IOException e) {
+            log.log(Level.SEVERE, "Downloading photo examples error", e);
+        }
     }
 }

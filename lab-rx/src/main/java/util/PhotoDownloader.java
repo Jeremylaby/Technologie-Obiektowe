@@ -2,6 +2,7 @@ package util;
 
 import driver.DuckDuckGoDriver;
 import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import model.Photo;
 import org.apache.tika.Tika;
 
@@ -51,6 +52,13 @@ public class PhotoDownloader {
             }
         });
 
+    }
+    public Observable<Photo> searchForPhotos(List<String> searchQueries) throws IOException {
+        return Observable
+                .fromIterable(searchQueries)
+                .flatMap(this::searchForPhotos)
+                .take(10)
+                .subscribeOn(Schedulers.io());
     }
 
     private Photo getPhoto(String photoUrl) throws IOException {
