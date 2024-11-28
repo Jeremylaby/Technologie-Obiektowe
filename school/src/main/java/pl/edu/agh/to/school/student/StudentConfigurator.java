@@ -6,9 +6,9 @@ import org.springframework.context.annotation.Configuration;
 
 import java.time.LocalDate;
 
-@Configuration
+
 public class StudentConfigurator {
-    @Bean
+
     CommandLineRunner commandLineRunner(StudentRepository studentRepository) {
         return args -> {
             if (studentRepository.count() == 0) {
