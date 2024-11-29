@@ -20,7 +20,7 @@ public class SchoolConfigurator {
     CommandLineRunner commandLineRunner(StudentRepository studentRepository, CourseRepository courseRepository, GradeRepository gradeRepository) {
         return args -> {
             if (studentRepository.count() == 0 && courseRepository.count() == 0 && gradeRepository.count() == 0) {
-                Student kowalski = new Student("Jan", "Kowalski", LocalDate.now(), "123456");
+                Student kowalski = new Student("Jan", "Kowalski", LocalDate.now(), "X");
                 Student budynek = new Student("Piotr", "Budynek", LocalDate.now(), "6547891");
                 Student menczystaty = new Student("Henryk", "Menczystaty", LocalDate.now(), "848565");
 

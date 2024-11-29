@@ -1,11 +1,9 @@
 package pl.edu.agh.to.school.course;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.*;
 import pl.edu.agh.to.school.student.Student;
 
 
@@ -21,7 +19,7 @@ public class Course {
 
     private String name;
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.LAZY)
     private List<Student> students;
 
     public Course() {}

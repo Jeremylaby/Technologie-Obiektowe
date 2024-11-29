@@ -1,11 +1,7 @@
 package pl.edu.agh.to.school.student;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import pl.edu.agh.to.school.grade.Grade;
 
 
@@ -24,7 +20,7 @@ public class Student {
     private LocalDate birthDate;
     private String indexNumber;
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.LAZY)
     private List<Grade> grades = new ArrayList<>();;
 
     public Student(String firstName, String lastName, LocalDate birthDate, String indexNumber) {

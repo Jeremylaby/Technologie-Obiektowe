@@ -1,10 +1,7 @@
 package pl.edu.agh.to.school.grade;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.persistence.*;
 import pl.edu.agh.to.school.course.Course;
 
 
@@ -17,7 +14,8 @@ public class Grade {
 
     private int gradeValue;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonBackReference
     private Course course;
 
     public Grade(int value, Course course) {
