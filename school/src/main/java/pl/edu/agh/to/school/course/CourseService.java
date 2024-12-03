@@ -16,5 +16,9 @@ public class CourseService {
     }
     public Optional<Course> getCourseById(int id) {
         return courseRepository.findById(id);
+
+    }
+    public List<Optional<Double>> getAverageGrades(int id){
+        return courseRepository.getAverageGrades(id);
     }
 }

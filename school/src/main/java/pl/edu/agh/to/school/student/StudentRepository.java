@@ -12,6 +12,7 @@ import java.util.Optional;
 public interface StudentRepository extends JpaRepository<Student, Integer> {
  Optional<Student> findByIndexNumber(String id);
 
+
  @Query("select avg(g.gradeValue) from Student s join s.grades g where s.id = :id")
  Optional<Double> getAverageGrade(@Param("id") int id);
 }
